@@ -1,6 +1,9 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#include <iostream>
+#include <cstdint>
+
 /**
  * Macros
  */
@@ -18,7 +21,9 @@
  * Typedefs
 */
 
-typedef char byte;
+typedef uint8_t byte;
+typedef uint16_t address;
+typedef uint16_t instruction;
 
 
 
