@@ -1,14 +1,15 @@
 #include "cpu.h"
 
+#include <cstdlib>
+
 namespace cp8 {
     Cpu::Cpu() {
         memory = Memory();
-        // Register inicialization
-
-
 
         this->pc = 0x200;
         this->i = 0;
+        this->delay_timer = 0;
+        this->sound_timer = 0;
     }
 
     byte Cpu::mask(instruction ins, uint16_t mask, byte size) {
@@ -35,6 +36,7 @@ namespace cp8 {
                 // * 1NNN: Jump to address 1NNN
                 ins &= MASK_FIRST_NIBBLE;
                 this->pc = ins;
+
                 break;
             case 2:
                 //* TODO: Define subroutines 2NNN: Execute subroutine starting at address NNN
@@ -47,6 +49,7 @@ namespace cp8 {
                 if (rx == nn) {
                     next_instruction();
                 }
+
                 break;
             case 4:
                 //* 4XNN: Skip the following instruction if the value of register VX is not equal to NN
@@ -56,6 +59,7 @@ namespace cp8 {
                 if (rx != nn) {
                     next_instruction();
                 }
+
                 break;
             case 5:
                 //* 5XY0: Skip the following instruction if the value of register VX is equal to the value of register VY
@@ -65,6 +69,7 @@ namespace cp8 {
                 if (rx == ry) {
                     next_instruction();
                 }
+
                 break;
             case 6:
                 //* 6XNN: Store number NN in register VX
@@ -72,6 +77,7 @@ namespace cp8 {
                 byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
 
                 this->registers[rx] = nn;
+
                 break;
             case 7:
                 //* 7XNN: Add value NN to register VX
@@ -79,6 +85,7 @@ namespace cp8 {
                 byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
 
                 this->registers[rx] += nn;
+
                 break;
             case 8:
                 byte last = this->mask(ins, MASK_FOURTH_NIBBLE, 0);
@@ -88,15 +95,19 @@ namespace cp8 {
                 switch (last) {
                     case 0:
                         this->registers[rx] = this->registers[ry];
+
                         break;
                     case 1: //* OR
                         this->registers[rx] = this->registers[rx] | this->registers[ry];
+
                         break;
                     case 2: //* AND
                         this->registers[rx] = this->registers[rx] & this->registers[ry];
+
                         break;
                     case 3: //* XOR
                         this->registers[rx] = this->registers[rx] ^ this->registers[ry];
+
                         break;
                     case 4: //* add
                         uint16_t result = this->registers[rx] + this->registers[ry];
@@ -142,6 +153,7 @@ namespace cp8 {
                         }
 
                         this->registers[rx] = (byte) result;
+
                         break;
                     case 0xE: //* left shift
                         byte vry = this->registers[ry];
@@ -151,20 +163,42 @@ namespace cp8 {
 
                         break;
                 }
+
                 break;
             case 9:
+                //* 9XY0: Skip next instruction if VX is different from VY
+                byte rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
+                byte ry = this->registers[this->mask(ins, MASK_THIRD_NIBBLE, 4)];
+
+                if (rx != ry) {
+                    next_instruction();
+                }
+
                 break;
             case 0xa:
+                //* ANNN: Store NNN in I
+                this->i = ins & 0x0FFF;
+
                 break;
             case 0xb:
+                //* BNNN: Jump to addresss NNN + V0
+                this->pc = (ins & 0x0FFF) + (address) this->registers[0];
+
                 break;
             case 0xc:
+                //* CXNN: Set VX to a random number with a mask of NN
+                byte random = rand() % 256;
+                this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)] = random & this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
+
                 break;
             case 0xd:
+                // TODO: Create graphics interface. DXYN: Draw a sprite (see docs)
                 break;
             case 0xe:
+                // TODO: Keypad integration. Two instructions to implement
                 break;
             case 0xf:
+                // TODO: Implement memory, timers, sprites and keypad.
                 break;
             
             default:
@@ -186,5 +220,23 @@ namespace cp8 {
             this->execute_instruction(ins);
         }
         // Execute instruction
+    }
+
+    // This function executes an instruction and shows output, only usable by sniffer
+    void Cpu::embedd_instruction(instruction ins) {
+        this->execute_instruction(ins);
+
+        for (int i = 0; i < 16; i++) {
+            this->status->registers[i] = this->registers[i];
+        }
+        this->status->pc = this->pc;
+        this->status->i = this->i;
+        this->status->delay_timer = this->delay_timer;
+        this->status->sound_timer = this->sound_timer;
+    }
+
+    CpuStatus* Cpu::share_status() {
+        this->status = new CpuStatus;
+        return status;
     }
 }

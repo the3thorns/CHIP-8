@@ -21,8 +21,16 @@
 
 namespace cp8 {
 
+    typedef struct CpuStatus {
+        byte registers[16] = {0};
+        address pc;
+        address i;
+        byte delay_timer;
+        byte sound_timer;
+    };
+
     class Cpu {
-        private:
+        private: 
             /**
              * Memory class
              */
@@ -38,6 +46,20 @@ namespace cp8 {
             address i;
 
             /**
+             * Timers
+             */
+
+            byte delay_timer;
+            byte sound_timer;
+
+
+            /**
+             * Status struct for sniffer
+             */
+
+            CpuStatus* status;
+
+            /**
              * Private functions
              */
             byte mask(instruction ins, uint16_t mask, byte size);
@@ -47,6 +69,8 @@ namespace cp8 {
         public:
             Cpu();
             void run(); // Starts the cpu execution
+            void embedd_instruction(instruction ins);
+            CpuStatus* share_status();
     };
 }
 
