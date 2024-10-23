@@ -5,47 +5,35 @@ namespace cp8 {
         memory = Memory();
         // Register inicialization
 
-        this->v0 = 0;
-        this->v1 = 0;
-        this->v2 = 0;
-        this->v3 = 0;
-        this->v4 = 0;
-        this->v5 = 0;
-        this->v6 = 0;
-        this->v7 = 0;
-        this->v8 = 0;
-        this->v9 = 0;
-        this->va = 0;
-        this->vb = 0;
-        this->vc = 0;
-        this->vd = 0;
-        this->ve = 0;
-        this->vf = 0;
+
 
         this->pc = 0x200;
         this->i = 0;
     }
 
     byte Cpu::mask(instruction ins, uint16_t mask, byte size) {
-        byte ret = ins && mask;
-        ret >>= sizeof(instruction) - size;
+        instruction ret = ins & mask;
+        ret >>= size;
 
-        return ret;
+        return (byte)ret;
     }
 
+    /**
+     * TODO: Add error checking
+     */
     void Cpu::execute_instruction(instruction ins) {
-        byte first = this->mask(ins, MASK_FIRST, 4);
+        byte first = this->mask(ins, MASK_FIRST_NIBBLE, 12);
 
         // Filter by the first nibble
         switch (first) {
             case 0:
-                // 0NNN: Not supported
+                //! 0NNN: Not supported
                 // TODO 00E0: Clear screen
                 //* TODO: Define subroutines 00EE: Return from a subroutine
                 break;
             case 1: // Only one option
                 // * 1NNN: Jump to address 1NNN
-                ins &= MASK_FIRST;
+                ins &= MASK_FIRST_NIBBLE;
                 this->pc = ins;
                 break;
             case 2:
@@ -53,18 +41,116 @@ namespace cp8 {
                 break;
             case 3:
                 //* 3XNN: Skip the following instruction if the vlaue of register X equals NN
-                byte value = this->mask(ins, MASK_LAST_TWO, 8);
+                byte rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
+                byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
                 
+                if (rx == nn) {
+                    next_instruction();
+                }
                 break;
             case 4:
+                //* 4XNN: Skip the following instruction if the value of register VX is not equal to NN
+                byte rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
+                byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
+                
+                if (rx != nn) {
+                    next_instruction();
+                }
                 break;
             case 5:
+                //* 5XY0: Skip the following instruction if the value of register VX is equal to the value of register VY
+                byte rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
+                byte ry = this->registers[this->mask(ins, MASK_THIRD_NIBBLE, 4)];
+
+                if (rx == ry) {
+                    next_instruction();
+                }
                 break;
             case 6:
+                //* 6XNN: Store number NN in register VX
+                byte rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
+                byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
+
+                this->registers[rx] = nn;
                 break;
             case 7:
+                //* 7XNN: Add value NN to register VX
+                byte rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
+                byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
+
+                this->registers[rx] += nn;
                 break;
             case 8:
+                byte last = this->mask(ins, MASK_FOURTH_NIBBLE, 0);
+                byte rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
+                byte ry = this->mask(ins, MASK_THIRD_NIBBLE, 4);
+
+                switch (last) {
+                    case 0:
+                        this->registers[rx] = this->registers[ry];
+                        break;
+                    case 1: //* OR
+                        this->registers[rx] = this->registers[rx] | this->registers[ry];
+                        break;
+                    case 2: //* AND
+                        this->registers[rx] = this->registers[rx] & this->registers[ry];
+                        break;
+                    case 3: //* XOR
+                        this->registers[rx] = this->registers[rx] ^ this->registers[ry];
+                        break;
+                    case 4: //* add
+                        uint16_t result = this->registers[rx] + this->registers[ry];
+
+                        if (result > 255) {
+                            // Overflow
+                            this->registers[0xf] = 1;
+                        } else {
+                            this->registers[0xf] = 0;
+                        }
+
+                        this->registers[rx] = (byte) result;
+
+                        break;
+                    case 5: //* sub
+                        uint16_t result = this->registers[rx] - this->registers[ry];
+
+                        if (result > this->registers[ry]) {
+                            this->registers[0xf] = 1;
+                        } else {
+                            // Borrow happened (underflow);
+                            this->registers[0xf] = 0;
+                        }
+
+                        this->registers[rx] = (byte) result;
+
+                        break;
+                    case 6: //* right shift
+                        byte vry = this->registers[ry];
+                        byte shifted = vry >> 1;
+                        this->registers[0xf] = vry & MASK_LEAST_SIG_BIT;
+                        this->registers[rx] = shifted;
+
+                        break;
+                    case 7:
+                        uint16_t result = this->registers[ry] - this->registers[rx];
+
+                        if (result < this->registers[ry]) {
+                            this->registers[0xf] = 1;
+                        } else {
+                            // Borrow happened (underflow);
+                            this->registers[0xf] = 0;
+                        }
+
+                        this->registers[rx] = (byte) result;
+                        break;
+                    case 0xE: //* left shift
+                        byte vry = this->registers[ry];
+                        byte shifted = vry << 1;
+                        this->registers[0xf] = vry & MASK_LEAST_SIG_BIT;
+                        this->registers[rx] = shifted;
+
+                        break;
+                }
                 break;
             case 9:
                 break;
@@ -82,17 +168,21 @@ namespace cp8 {
                 break;
             
             default:
-                LOG("Unsuported instruction");
+                std::cout << "Unsupported instruction" << std::endl;
             
         }
     }
 
+    void Cpu::next_instruction() {
+        this->pc+=sizeof(instruction);
+    }
     // Starts Cpu execution
     void Cpu::run() {
         // Fetch instruction
+        this->pc = 0x200; // First aviable address for instructions
         while (true) {
             instruction ins = memory.fetch(this->pc);
-            this->pc+=sizeof(instruction);
+            this->next_instruction();
             this->execute_instruction(ins);
         }
         // Execute instruction
