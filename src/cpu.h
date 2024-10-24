@@ -27,7 +27,7 @@ namespace cp8 {
         address i;
         byte delay_timer;
         byte sound_timer;
-    };
+    } CpuStatus;
 
     class Cpu {
         private: 
