@@ -24,7 +24,15 @@ namespace cp8 {
      */
     void Cpu::execute_instruction(instruction ins) {
         byte first = this->mask(ins, MASK_FIRST_NIBBLE, 12);
-
+        byte rx;
+        byte nn;
+        byte ry;
+        uint16_t result;
+        byte shifted;
+        byte vrx;
+        byte vry;
+        byte last;
+        byte random;
         // Filter by the first nibble
         switch (first) {
             case 0:
@@ -43,8 +51,8 @@ namespace cp8 {
                 break;
             case 3:
                 //* 3XNN: Skip the following instruction if the vlaue of register X equals NN
-                byte rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
-                byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
+                rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
+                nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
                 
                 if (rx == nn) {
                     next_instruction();
@@ -53,8 +61,8 @@ namespace cp8 {
                 break;
             case 4:
                 //* 4XNN: Skip the following instruction if the value of register VX is not equal to NN
-                byte rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
-                byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
+                rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
+                nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
                 
                 if (rx != nn) {
                     next_instruction();
@@ -63,8 +71,8 @@ namespace cp8 {
                 break;
             case 5:
                 //* 5XY0: Skip the following instruction if the value of register VX is equal to the value of register VY
-                byte rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
-                byte ry = this->registers[this->mask(ins, MASK_THIRD_NIBBLE, 4)];
+                rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
+                ry = this->registers[this->mask(ins, MASK_THIRD_NIBBLE, 4)];
 
                 if (rx == ry) {
                     next_instruction();
@@ -73,24 +81,24 @@ namespace cp8 {
                 break;
             case 6:
                 //* 6XNN: Store number NN in register VX
-                byte rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
-                byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
+                rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
+                nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
 
                 this->registers[rx] = nn;
 
                 break;
             case 7:
                 //* 7XNN: Add value NN to register VX
-                byte rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
-                byte nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
+                 rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
+                 nn = this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
 
                 this->registers[rx] += nn;
 
                 break;
             case 8:
-                byte last = this->mask(ins, MASK_FOURTH_NIBBLE, 0);
-                byte rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
-                byte ry = this->mask(ins, MASK_THIRD_NIBBLE, 4);
+                last = this->mask(ins, MASK_FOURTH_NIBBLE, 0);
+                rx = this->mask(ins, MASK_SECOND_NIBBLE, 8);
+                ry = this->mask(ins, MASK_THIRD_NIBBLE, 4);
 
                 switch (last) {
                     case 0:
@@ -110,7 +118,7 @@ namespace cp8 {
 
                         break;
                     case 4: //* add
-                        uint16_t result = this->registers[rx] + this->registers[ry];
+                        result = this->registers[rx] + this->registers[ry];
 
                         if (result > 255) {
                             // Overflow
@@ -123,7 +131,7 @@ namespace cp8 {
 
                         break;
                     case 5: //* sub
-                        uint16_t result = this->registers[rx] - this->registers[ry];
+                        result = this->registers[rx] - this->registers[ry];
 
                         if (result > this->registers[ry]) {
                             this->registers[0xf] = 1;
@@ -136,14 +144,14 @@ namespace cp8 {
 
                         break;
                     case 6: //* right shift
-                        byte vry = this->registers[ry];
-                        byte shifted = vry >> 1;
+                        vry = this->registers[ry];
+                        shifted = vry >> 1;
                         this->registers[0xf] = vry & MASK_LEAST_SIG_BIT;
                         this->registers[rx] = shifted;
 
                         break;
                     case 7:
-                        uint16_t result = this->registers[ry] - this->registers[rx];
+                        result = this->registers[ry] - this->registers[rx];
 
                         if (result < this->registers[ry]) {
                             this->registers[0xf] = 1;
@@ -156,8 +164,8 @@ namespace cp8 {
 
                         break;
                     case 0xE: //* left shift
-                        byte vry = this->registers[ry];
-                        byte shifted = vry << 1;
+                        vry = this->registers[ry];
+                        shifted = vry << 1;
                         this->registers[0xf] = vry & MASK_LEAST_SIG_BIT;
                         this->registers[rx] = shifted;
 
@@ -167,8 +175,8 @@ namespace cp8 {
                 break;
             case 9:
                 //* 9XY0: Skip next instruction if VX is different from VY
-                byte rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
-                byte ry = this->registers[this->mask(ins, MASK_THIRD_NIBBLE, 4)];
+                rx = this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)];
+                ry = this->registers[this->mask(ins, MASK_THIRD_NIBBLE, 4)];
 
                 if (rx != ry) {
                     next_instruction();
@@ -187,18 +195,21 @@ namespace cp8 {
                 break;
             case 0xc:
                 //* CXNN: Set VX to a random number with a mask of NN
-                byte random = rand() % 256;
+                random = rand() % 256;
                 this->registers[this->mask(ins, MASK_SECOND_NIBBLE, 8)] = random & this->mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
 
                 break;
             case 0xd:
                 // TODO: Create graphics interface. DXYN: Draw a sprite (see docs)
+                LOG("Todo")
                 break;
             case 0xe:
                 // TODO: Keypad integration. Two instructions to implement
+                LOG("Todo")
                 break;
             case 0xf:
                 // TODO: Implement memory, timers, sprites and keypad.
+                LOG("Todo");
                 break;
             
             default:
