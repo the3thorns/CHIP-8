@@ -14,6 +14,7 @@ namespace cp8 {
             byte _mem[MEMORY_SIZE];
 
         public:
+            // TODO
             instruction fetch(address a);
 
             // TODO
