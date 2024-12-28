@@ -1,8 +1,8 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include <iostream>
-#include <cstdint>
+#include <stdio.h>
+#include <stdint.h>
 
 /**
  * Macros
@@ -12,10 +12,12 @@
 #define DEBUG
 
 #ifdef DEBUG
-    #define LOG(x) std::cout << (x) << std::endl;
+    #define LOG(x) printf("%s\n", x);
 #else
     #define LOG(x)
 #endif
+
+#define MEMORY_SIZE 4096
 
 /**
  * Typedefs
