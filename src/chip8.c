@@ -87,7 +87,7 @@ int ch8_load_memory(const char* path) {
     return 0;
 }
 
-void ch8_dump_memory() {
+void ch8_dump_memory(FILE* output_stream) {
     if (memory != NULL) {
         for (int j = 0x200; j <= 0xE8F; j+=2) {
             instruction* mem_ins = (instruction*) &memory[j];
