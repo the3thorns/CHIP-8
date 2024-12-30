@@ -10,9 +10,27 @@
 
 #define MASK_LEAST_SIG_BIT      0x0001
 
-void execute_instruction(instruction ins);
+/**
+ * Prepares resgisters and timers
+ * This function must be called before every other CHIP-8 function
+ */
+void ch8_init();
 
-void print_status();
+/**
+ * Loads memory from a rom file
+ */
+
+int ch8_load_memory(const char* path);
+
+/**
+ * Inserts a raw instruction into the CHIP-8 interpreter and executes it
+ */
+void ch8_execute_instruction(instruction ins);
+
+/**
+ * Prints the status of the registers and tiemrs
+ */
+void ch8_print_status();
 
 
 #endif // CHIP8_H_
