@@ -11,7 +11,7 @@
 /**
  * Memory
  */
-byte memory[MEMORY_SIZE];
+byte* memory;
 
 /**
  * CPU variables
@@ -40,7 +40,7 @@ static byte mask(instruction ins, uint16_t mask, byte size) {
 }
 
 static void next_instruction() {
-    pc += 4;
+    pc += 2;
 }
 
 void ch8_init() {
@@ -52,6 +52,38 @@ void ch8_init() {
     delay_timer = 0;
     sound_timer = 0;
     i = 0;
+}
+
+static void init_memory(int memory_size) {
+    memory = (byte*) malloc(sizeof(byte) * memory_size);
+}
+
+int ch8_load_memory(const char* path) {
+    FILE* file = fopen(path, "r");
+
+    if (file == NULL) {
+        // Raise error
+        perror("File not found or does not exist");
+        exit(-1);
+    }
+
+    init_memory(MEMORY_SIZE);
+
+    // Free addresses: [0x200, 0xE8F]
+    // Final 352 bytes are reserved.
+
+    // Insert data from file to memory
+    instruction ins;
+    for (int j = 0x200; j <= 0xE8F; j+=2) {
+        // fread reads binary data from file stream
+        fread(&ins, sizeof(instruction), 1, file);
+        instruction* mem_ins = (instruction*) &memory[j];
+        *mem_ins = ins;
+    }
+
+    fclose(file);
+
+    return 0;
 }
 
 void ch8_execute_instruction(instruction ins) {
@@ -269,4 +301,8 @@ void ch8_print_status() {
     printf("== TIMERS ==\n");
     printf("Delay timer: %d\n", (int) delay_timer);
     printf("Sound timer: %d\n", (int) sound_timer);
+}
+
+void ch8_end() {
+    free(memory);
 }

@@ -33,4 +33,10 @@ void ch8_execute_instruction(instruction ins);
 void ch8_print_status();
 
 
+/**
+ * Frees all data allocated by the CHIP-8 interpreter
+ */
+void ch8_end();
+
+
 #endif // CHIP8_H_
