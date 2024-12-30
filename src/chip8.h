@@ -22,6 +22,13 @@ void ch8_init();
 
 int ch8_load_memory(const char* path);
 
+
+/**
+ * Prints memory contents into stdout
+ */
+
+void ch8_dump_memory();
+
 /**
  * Inserts a raw instruction into the CHIP-8 interpreter and executes it
  */

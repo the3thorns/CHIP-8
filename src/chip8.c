@@ -52,6 +52,7 @@ void ch8_init() {
     delay_timer = 0;
     sound_timer = 0;
     i = 0;
+    memory = NULL;
 }
 
 static void init_memory(int memory_size) {
@@ -84,6 +85,15 @@ int ch8_load_memory(const char* path) {
     fclose(file);
 
     return 0;
+}
+
+void ch8_dump_memory() {
+    if (memory != NULL) {
+        for (int j = 0x200; j <= 0xE8F; j+=2) {
+            instruction* mem_ins = (instruction*) &memory[j];
+            printf("Add 0x%X: 0x%X\n", j, (int) *mem_ins);
+        }
+    }
 }
 
 void ch8_execute_instruction(instruction ins) {
@@ -304,5 +314,7 @@ void ch8_print_status() {
 }
 
 void ch8_end() {
-    free(memory);
+    if (memory != NULL){
+        free(memory);
+    }
 }
