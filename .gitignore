@@ -34,3 +34,4 @@ main
 .vscode
 src/test.*
 *.ch8
+*.txt
