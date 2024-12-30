@@ -1,5 +1,6 @@
 #include "common.h"
 #include "chip8.h"
+#include <stdlib.h>
 
 /**
  * This file contains all utilities of chip-8, serves as an API.
@@ -10,13 +11,13 @@
 /**
  * Memory
  */
-byte memory[4096];
+byte memory[MEMORY_SIZE];
 
 /**
  * CPU variables
  */
 
-byte registers[16] = {0};
+byte registers[16];
 address pc;
 address i;
 byte delay_timer;
@@ -26,6 +27,11 @@ byte sound_timer;
  * Functions
  */
 
+
+static byte mask(instruction ins, uint16_t mask, byte size);
+
+static void next_instruction();
+
 static byte mask(instruction ins, uint16_t mask, byte size) {
     instruction ret = ins & mask;
     ret >>= size;
@@ -33,7 +39,22 @@ static byte mask(instruction ins, uint16_t mask, byte size) {
     return (byte)ret;
 }
 
-void execute_instruction(instruction ins) {
+static void next_instruction() {
+    pc += 4;
+}
+
+void ch8_init() {
+    for (int j = 0; i < 16; i++) {
+        registers[j] = 0;
+    }
+
+    pc = 0x200;
+    delay_timer = 0;
+    sound_timer = 0;
+    i = 0;
+}
+
+void ch8_execute_instruction(instruction ins) {
     byte first = mask(ins, MASK_FIRST_NIBBLE, 12);
     byte rx;
     byte nn;
@@ -229,6 +250,23 @@ void execute_instruction(instruction ins) {
     }
 }
 
-void print_status() {
+/*
+byte registers[16] = {0};
+address pc;
+address i;
+byte delay_timer;
+byte sound_timer;
+*/
+
+void ch8_print_status() {
+    printf("== Registers ==\n");
+    for (int j = 0; j < 8; j++) {
+        printf("Register %d: 0x%X \tRegister %d: 0x%X\n", j, registers[j], j+8, registers[j+8]);
+    }
+    printf("Register I: 0x%X\n", i);
+    printf("Register PC: 0x%X\n\n", pc);
     
+    printf("== TIMERS ==\n");
+    printf("Delay timer: %d\n", (int) delay_timer);
+    printf("Sound timer: %d\n", (int) sound_timer);
 }
