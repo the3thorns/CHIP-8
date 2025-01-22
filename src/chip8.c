@@ -218,9 +218,8 @@ void ch8_execute_instruction(instruction ins) {
 
                     break;
                 case 6: //* right shift
-                    vry = registers[ry];
-                    shifted = vry >> 1;
-                    registers[0xf] = vry & MASK_LEAST_SIG_BIT;
+                    shifted = registers[rx] >> registers[ry];
+                    registers[0xf] = registers[rx] & MASK_LEAST_SIG_BIT;
                     registers[rx] = shifted;
 
                     break;
@@ -238,9 +237,8 @@ void ch8_execute_instruction(instruction ins) {
 
                     break;
                 case 0xE: //* left shift
-                    vry = registers[ry];
-                    shifted = vry << 1;
-                    registers[0xf] = vry & MASK_LEAST_SIG_BIT;
+                    shifted = registers[rx] << registers[ry];
+                    registers[0xf] = registers[rx] & 0b10000000;
                     registers[rx] = shifted;
 
                     break;
