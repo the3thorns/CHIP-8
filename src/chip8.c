@@ -115,8 +115,8 @@ void ch8_execute_instruction(instruction ins) {
             //* TODO: Define subroutines 00EE: Return from a subroutine
             break;
         case 1: // Only one option
-            // * 1NNN: Jump to address 1NNN
-            ins &= MASK_FIRST_NIBBLE;
+            // * 1NNN: Jump to address NNN
+            ins &= 0x0111;
             pc = ins;
 
             break;
