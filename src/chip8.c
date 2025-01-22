@@ -303,7 +303,7 @@ byte sound_timer;
 void ch8_print_status() {
     printf("== Registers ==\n");
     for (int j = 0; j < 8; j++) {
-        printf("Register %d: 0x%X \tRegister %d: 0x%X\n", j, registers[j], j+8, registers[j+8]);
+        printf("Register %X: 0x%X \tRegister %X: 0x%X\n", j, registers[j], j+8, registers[j+8]);
     }
     printf("Register I: 0x%X\n", i);
     printf("Register PC: 0x%X\n\n", pc);
