@@ -39,6 +39,8 @@ static byte mask(instruction ins, uint16_t mask, byte size) {
     return (byte)ret;
 }
 
+static void check_f_instruction(instruction ins);
+
 static void next_instruction() {
     pc += 2;
 }
@@ -280,13 +282,60 @@ void ch8_execute_instruction(instruction ins) {
             LOG("Todo")
             break;
         case 0xf:
-            // TODO: Implement memory, timers, sprites and keypad.
-            LOG("Todo");
+
             break;
-        
         default:
             printf("Unsupported instruction\n");
         
+    }
+}
+
+static void check_f_instruction(instruction ins) {
+    byte third = mask(ins, MASK_THIRD_NIBBLE, 4);
+    byte fourth = mask(ins, MASK_FOURTH_NIBBLE, 0);
+    byte x = mask(ins, MASK_SECOND_NIBBLE, 8);
+
+    switch (third) {
+        case 0x0:
+            switch (fourth) {
+                case 0x7:
+                    registers[x] = delay_timer;
+                    break;
+                case 0xA:
+                    // TODO: Keypad implementation
+                    LOG("Keypad not implemented");
+                    break;
+            }
+
+            break;
+        case 0x1:
+            switch (fourth) {
+                case 0x5:
+                    delay_timer = registers[x];
+                    break;
+                case 0x8:
+                    sound_timer = registers[x];
+                    break;
+                case 0xE:
+                    i += registers[x];
+                    break;
+            }
+
+            break;
+        case 0x2:
+            // TODO: One instruction
+            //* Font
+            break;
+        case 0x3:
+            // TODO: One instruction
+            
+            break;
+        case 0x5:
+            // TODO: One instruction
+            break;
+        case 0x6:
+            // TODO: One instruction
+            break;
     }
 }
 
