@@ -7,6 +7,7 @@
  */
 
 #include "common.h"
+#include <stdbool.h>
 
 #define STANDARD_WIDTH  64
 #define STANDARD_HEIGHT 32
@@ -17,8 +18,19 @@
  */
 void ch8g_init_window(int width, int height);
 
+/*
+ * Checks if the X-button of the window is pressed
+ */
 
-/**
+bool ch8g_window_closing();
+
+/*
+ * Closes the window
+ */
+
+void ch8g_close_window();
+
+/*
  * Draws a sprite on the coordinates x, y
  * Width: 8 pixels
  * Height: N pixels
