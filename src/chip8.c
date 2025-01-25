@@ -80,9 +80,10 @@ int ch8_load_memory(const char* path) {
     instruction ins;
     for (int j = 0x200; j <= 0xE8F; j+=2) {
         // fread reads binary data from file stream
-        fread(&ins, sizeof(instruction), 1, file);
-        instruction* mem_ins = (instruction*) &memory[j];
-        *mem_ins = ins;
+        if (fread(&ins, sizeof(instruction), 1, file) > 0) {
+            instruction* mem_ins = (instruction*) &memory[j];
+            *mem_ins = ins;
+        }
     }
 
     fclose(file);
@@ -90,7 +91,7 @@ int ch8_load_memory(const char* path) {
     return 0;
 }
 
-void ch8_dump_memory(FILE* output_stream) {
+void ch8_dump_memory() {
     if (memory != NULL) {
         for (int j = 0x200; j <= 0xE8F; j+=2) {
             instruction* mem_ins = (instruction*) &memory[j];
