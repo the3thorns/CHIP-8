@@ -1,5 +1,6 @@
 #include "common.h"
 #include "chip8.h"
+#include "graphics.h"
 #include <stdlib.h>
 
 /**
@@ -113,8 +114,19 @@ void ch8_execute_instruction(instruction ins) {
     switch (first) {
         case 0:
             //! 0NNN: Not supported
-            // TODO 00E0: Clear screen
-            //* TODO: Define subroutines 00EE: Return from a subroutine
+            last = mask(ins, MASK_FOURTH_NIBBLE, 0);
+
+            switch (last) {
+                case 0x0:
+                    //* 00E0: Clear screen
+                    // ch8g_clear_screen(STANDARD_WIDTH, STANDARD_HEIGHT);
+                    break;
+                case 0xE:
+                    // TODO: Define subroutines 00EE: Return from a subroutine
+
+                    break;
+            }
+
             break;
         case 1: // Only one option
             // * 1NNN: Jump to address NNN
@@ -276,13 +288,18 @@ void ch8_execute_instruction(instruction ins) {
         case 0xd:
             // TODO: Create graphics interface. DXYN: Draw a sprite (see docs)
             LOG("Todo")
+            rx = mask(ins, MASK_SECOND_NIBBLE, 8);
+            ry = mask(ins, MASK_THIRD_NIBBLE, 4);
+            nn = mask(ins, MASK_FOURTH_NIBBLE, 0);
+
+            // ch8g_draw_sprite(rx, ry, nn, memory, i, &registers[0xf]);
             break;
         case 0xe:
             // TODO: Keypad integration. Two instructions to implement
             LOG("Todo")
             break;
         case 0xf:
-
+            check_f_instruction(ins);
             break;
         default:
             printf("Unsupported instruction\n");
@@ -331,10 +348,10 @@ static void check_f_instruction(instruction ins) {
             
             break;
         case 0x5:
-            // TODO: One instruction
+            // TODO: One instruction. MEMORY REQUIRED
             break;
         case 0x6:
-            // TODO: One instruction
+            // TODO: One instruction. MEMORY REQUIRED
             break;
     }
 }
