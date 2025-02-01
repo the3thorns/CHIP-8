@@ -48,6 +48,12 @@ int ch8_load_memory(const char* path);
 void ch8_dump_memory();
 
 /**
+ * Gets the instruction from memory
+ */
+
+instruction ch8_fech_instruction();
+
+/**
  * Inserts a raw instruction into the CHIP-8 interpreter and executes it
  */
 void ch8_execute_instruction(instruction ins);

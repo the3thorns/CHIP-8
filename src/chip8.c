@@ -117,6 +117,11 @@ void ch8_dump_memory() {
     }
 }
 
+instruction ch8_fech_instruction() {
+    instruction *ins = (instruction*) &memory[pc];
+    return *ins;
+}
+
 void ch8_execute_instruction(instruction ins) {
     byte first = mask(ins, MASK_FIRST_NIBBLE, 12);
     byte rx;
@@ -305,12 +310,12 @@ void ch8_execute_instruction(instruction ins) {
             break;
         case 0xd:
             // TODO: Create graphics interface. DXYN: Draw a sprite (see docs)
-            LOG("Todo")
+            // LOG("Todo")
             rx = mask(ins, MASK_SECOND_NIBBLE, 8);
             ry = mask(ins, MASK_THIRD_NIBBLE, 4);
             nn = mask(ins, MASK_FOURTH_NIBBLE, 0);
 
-            // ch8g_draw_sprite(rx, ry, nn, memory, i, &registers[0xf]);
+            ch8g_draw_sprite(rx, ry, nn, memory, i, &registers[0xf]);
             break;
         case 0xe:
             // TODO: Keypad integration. Two instructions to implement
@@ -323,6 +328,7 @@ void ch8_execute_instruction(instruction ins) {
             printf("Unsupported instruction\n");
         
     }
+    next_instruction();
 }
 
 static void check_f_instruction(instruction ins) {
