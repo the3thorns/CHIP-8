@@ -25,13 +25,23 @@ byte delay_timer;
 byte sound_timer;
 
 /**
- * Functions
+ * Function declarations
  */
-
 
 static byte mask(instruction ins, uint16_t mask, byte size);
 
 static void next_instruction();
+
+static void load_standard_fonts();
+
+static void init_memory(int memory_size);
+
+static void check_f_instruction(instruction ins);
+
+
+/**
+ *  Functions
+ */
 
 static byte mask(instruction ins, uint16_t mask, byte size) {
     instruction ret = ins & mask;
@@ -40,10 +50,18 @@ static byte mask(instruction ins, uint16_t mask, byte size) {
     return (byte)ret;
 }
 
-static void check_f_instruction(instruction ins);
 
 static void next_instruction() {
     pc += 2;
+}
+
+static void load_standard_fonts() {
+    standard_font arr[] = {F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, FA, FB, FC, FD, FE, FF};
+
+    for (int j = 0; j < 16; j++) {
+        standard_font *location = (standard_font*) &memory[j * 8];
+        *location = arr[j];
+    }
 }
 
 void ch8_init() {
@@ -55,7 +73,8 @@ void ch8_init() {
     delay_timer = 0;
     sound_timer = 0;
     i = 0;
-    memory = NULL;
+    init_memory(MEMORY_SIZE);
+    load_standard_fonts();
 }
 
 static void init_memory(int memory_size) {
@@ -70,8 +89,6 @@ int ch8_load_memory(const char* path) {
         perror("File not found or does not exist");
         exit(-1);
     }
-
-    init_memory(MEMORY_SIZE);
 
     // Free addresses: [0x200, 0xE8F]
     // Final 352 bytes are reserved.
@@ -93,7 +110,7 @@ int ch8_load_memory(const char* path) {
 
 void ch8_dump_memory() {
     if (memory != NULL) {
-        for (int j = 0x200; j <= 0xE8F; j+=2) {
+        for (int j = 0X0; j <= 0xE8F; j+=2) {
             instruction* mem_ins = (instruction*) &memory[j];
             printf("Add 0x%X: 0x%X\n", j, (int) *mem_ins);
         }
