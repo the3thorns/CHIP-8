@@ -19,6 +19,12 @@
 
 #define MEMORY_SIZE 4096
 
+#define TARGET_FPS 30
+
+#ifndef TARGET_FPS
+    #define TARGET_FPS 30
+#endif
+
 /**
  * Typedefs
 */
