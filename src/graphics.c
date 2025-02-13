@@ -68,33 +68,14 @@ void ch8g_close_window() {
 
 void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
     *vf = 0;
+}
 
-    byte sprite = memory[i];
-    byte *screen_byte = &screen_bitmap[y * screen_width + x];
-    BeginDrawing();
-    
-        for (int j = 0; j < N; j++) {
-            for (int p = 0; p < 8; p++) {
-                byte mask = 0b10000000 & sprite;
-                *screen_byte ^= mask;
+void ch8g_draw_buffer_contents() {
 
-                if (*screen_byte != 0) {
-                    DrawPixel(x, y, WHITE);
-                } else {
-                    *vf = 1; // Collistion
-                    DrawPixel(x, y, BLACK);
-                }
-
-                x = (x + 1) % screen_width;
-            }
-            y = (y + 1) % screen_height;
-        }
-
-    EndDrawing();
 }
 
 void ch8g_clear_screen() {
-    BeginDrawing();
-        ClearBackground(BLACK);
-    EndDrawing();
+    for (int j = 0; j < screen_width * screen_height; j++) {
+        screen_bitmap[j] = 0;
+    }
 }

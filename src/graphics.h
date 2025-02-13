@@ -31,7 +31,7 @@ bool ch8g_window_closing();
 void ch8g_close_window();
 
 /*
- * Draws a sprite on the coordinates x, y
+ * Draws a sprite on the coordinates x, y in the buffer
  * Width: 8 pixels
  * Height: N pixels
  */
@@ -39,7 +39,14 @@ void ch8g_close_window();
 void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf);
 
 /*
- * Clears the screen
+ * This function seems weird but it has sense
+ * This function outputs the contets of the byte buffer which stores the pixels that should be drawn on the screen
+ */
+
+void ch8g_draw_buffer_contents();
+
+/*
+ * Clears the screen and the buffer back to black
  */
 void ch8g_clear_screen();
 
