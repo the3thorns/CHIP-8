@@ -48,7 +48,7 @@ void ch8g_init_window(int width, int height) {
     // Creates OpenGL context and window
     InitWindow(width, height, "CHIP-8");
 
-    SetTargetFPS(TARGET_FPS);
+    //SetTargetFPS(TARGET_FPS);
 
     BeginDrawing();
         ClearBackground(BLACK);
