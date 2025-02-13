@@ -49,7 +49,7 @@ void interpreter_loop() {
         } else {
             instruction ins = ch8_fech_instruction();
             ch8_execute_instruction(ins);
-            ch8g_clear_screen();
+            ch8g_draw_buffer_contents();
         }
     }
 
