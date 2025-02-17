@@ -9,14 +9,13 @@
 #include "common.h"
 #include <stdbool.h>
 
-#define STANDARD_WIDTH  64
-#define STANDARD_HEIGHT 32
+#define ASPECT_RATIO 2
 
 
 /*
  * Creates the window
  */
-void ch8g_init_window(int width, int height);
+void ch8g_init_graphics(int width, int height);
 
 /*
  * Checks if the X-button of the window is pressed
@@ -28,7 +27,7 @@ bool ch8g_window_closing();
  * Closes the window
  */
 
-void ch8g_close_window();
+void ch8g_close_graphics();
 
 /*
  * Draws a sprite on the coordinates x, y in the buffer
@@ -43,7 +42,7 @@ void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf);
  * This function outputs the contets of the byte buffer which stores the pixels that should be drawn on the screen
  */
 
-void ch8g_draw_buffer_contents();
+void ch8g_draw();
 
 /*
  * Clears the screen and the buffer back to black

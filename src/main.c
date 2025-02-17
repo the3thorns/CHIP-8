@@ -37,21 +37,14 @@ int main(int argc, char** argv) {
 }
 
 void interpreter_loop() {
-    ch8g_init_window(64, 32);
-
-    bool closeWindow = false;
+    ch8g_init_graphics(64, 32);
     
     // Loop
-    while (!closeWindow) {
-
-        if (ch8g_window_closing()) {
-            closeWindow = true;
-        } else {
-            instruction ins = ch8_fech_instruction();
-            ch8_execute_instruction(ins);
-            ch8g_draw_buffer_contents();
-        }
+    while (!ch8g_window_closing()) {
+        instruction ins = ch8_fech_instruction();
+        ch8_execute_instruction(ins);
+        ch8g_draw();
     }
 
-    ch8g_close_window();
+    ch8g_close_graphics();
 }
