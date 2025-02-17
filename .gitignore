@@ -35,3 +35,4 @@ main
 src/test.*
 *.ch8
 *.txt
+SDL2Tests/*
