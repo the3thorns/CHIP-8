@@ -9,6 +9,8 @@
 #include "common.h"
 #include <stdbool.h>
 
+#define HEIGHT       32
+#define WIDTH        64
 #define ASPECT_RATIO 2
 
 

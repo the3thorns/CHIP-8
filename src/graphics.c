@@ -80,8 +80,65 @@ void ch8g_close_graphics() {
 }
 
 void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
-    // ! Not working, temporal feature
+    // TODO: Test
+    *vf = 0;
 
+    int n_pixel = y * WIDTH + x; // Number of pixel on screen
+    int n_byte = n_pixel / 8; // Index of the byte that contains the pixel
+
+    byte byte_position = 0;
+    byte initial_byte_position = 0;
+    byte mask = 0b10000000;
+    byte pixels_byte; // Used to store the byte of the pixels array
+    byte *pixels;
+    int pitch;
+
+    // Initial for loop
+    for (int j = n_byte; j < n_pixel; j++) {
+        mask >>= 1;
+        byte_position++;
+    }
+
+    initial_byte_position = byte_position;
+
+    SDL_LockTexture(texture, NULL, (void**)&pixels, &pitch);
+
+    pixels_byte = pixels[n_byte];
+
+    for (int h = 0; h < N; h++) {
+        for (int w = 0; w < 8; w++) {
+            if (byte_position >= 8) {
+                n_pixel = y * WIDTH + x;
+                n_byte = n_pixel / 8;
+                byte_position = 0;
+                pixels_byte = pixels[n_byte];
+                mask = 128;
+            }
+            // Check for collision
+
+            pixels_byte ^= pixels_byte & mask;
+            
+            if (pixels_byte != pixels[n_byte]) {
+                *vf = 1;
+            }
+
+            pixels[n_byte] = pixels_byte;
+
+            byte_position++;
+            mask >>= 1;
+            x = (x + 1) % WIDTH;
+        }
+        // Recalculate bit and byte position
+        y = (y + 1) % HEIGHT;
+        n_pixel = y * WIDTH + x;
+        n_byte = n_pixel / 8;
+        mask = 128;
+        mask >>= initial_byte_position;
+        byte_position = initial_byte_position;
+        pixels_byte = pixels[n_byte];
+    }
+
+    SDL_UnlockTexture(texture);
 }
 
 void ch8g_draw() {
