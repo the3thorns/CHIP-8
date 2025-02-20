@@ -17,7 +17,7 @@
 /*
  * Creates the window
  */
-void ch8g_init_graphics(int width, int height);
+void ch8g_init_graphics();
 
 /*
  * Checks if the X-button of the window is pressed

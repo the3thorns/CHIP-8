@@ -31,15 +31,7 @@ SDL_Texture *texture;
  * Function implementations
  */
 
-void ch8g_init_graphics(int width, int height) {
-
-    // Check if width and height are multiple of 8
-
-    if ((width >= 64 && width % 8 != 0) || (height >= 32 && height % 8 != 0)) {
-        perror("Width and height of screen are not multiple of 8");
-        exit(-1);
-    }
-
+void ch8g_init_graphics() {
     // Init SDL2
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
     window = SDL_CreateWindow("CHIP-8", 100, 100, 64, 32, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
