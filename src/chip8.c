@@ -82,7 +82,7 @@ static void init_memory(int memory_size) {
 }
 
 int ch8_load_memory(const char* path) {
-    FILE* file = fopen(path, "r");
+    FILE* file = fopen(path, "rb");
 
     if (file == NULL) {
         // Raise error
@@ -94,12 +94,13 @@ int ch8_load_memory(const char* path) {
     // Final 352 bytes are reserved.
 
     // Insert data from file to memory
-    instruction ins;
+    byte ins[2];
     for (int j = 0x200; j <= 0xE8F; j+=2) {
         // fread reads binary data from file stream
-        if (fread(&ins, sizeof(instruction), 1, file) > 0) {
-            instruction* mem_ins = (instruction*) &memory[j];
-            *mem_ins = ins;
+        if (fread(&ins, sizeof(byte), 2, file) > 0) {
+            // Adjusted for little endian
+            memory[j] = ins[1];
+            memory[j+1] = ins[0];
         }
     }
 
