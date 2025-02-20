@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 }
 
 void interpreter_loop() {
-    ch8g_init_graphics(64, 32);
+    ch8g_init_graphics();
     
     // Loop
     while (!ch8g_window_closing()) {
