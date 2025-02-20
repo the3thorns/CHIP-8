@@ -142,11 +142,11 @@ void ch8_execute_instruction(instruction ins) {
             switch (last) {
                 case 0x0:
                     //* 00E0: Clear screen
-                    // ch8g_clear_screen(STANDARD_WIDTH, STANDARD_HEIGHT);
+                    ch8g_clear_screen();
                     break;
                 case 0xE:
                     // TODO: Define subroutines 00EE: Return from a subroutine
-
+                    LOG("Todo (00EE): Define subroutines");
                     break;
             }
 
@@ -309,8 +309,7 @@ void ch8_execute_instruction(instruction ins) {
 
             break;
         case 0xd:
-            // TODO: Create graphics interface. DXYN: Draw a sprite (see docs)
-            // LOG("Todo")
+            LOG("TEST Draw sprite");
             rx = mask(ins, MASK_SECOND_NIBBLE, 8);
             ry = mask(ins, MASK_THIRD_NIBBLE, 4);
             nn = mask(ins, MASK_FOURTH_NIBBLE, 0);
@@ -318,14 +317,16 @@ void ch8_execute_instruction(instruction ins) {
             ch8g_draw_sprite(rx, ry, nn, memory, i, &registers[0xf]);
             break;
         case 0xe:
+            //* EX9E:Skip the following instruction if the key corresponding to the hex value currently stored in register VX is pressed
+            //* EXA1: Skip the following instruction if the key corresponding to the hex value currently stored in register VX is not pressed
             // TODO: Keypad integration. Two instructions to implement
-            LOG("Todo")
+            LOG("TODO (EX{9E|A1}): Keypad integration");
             break;
         case 0xf:
             check_f_instruction(ins);
             break;
         default:
-            printf("Unsupported instruction\n");
+            fprintf(stderr, "Unsupported instruction\n");
         
     }
     next_instruction();
@@ -344,7 +345,7 @@ static void check_f_instruction(instruction ins) {
                     break;
                 case 0xA:
                     // TODO: Keypad implementation
-                    LOG("Keypad not implemented");
+                    LOG("TODO (FX0{7|A}): Delay timer and keypress");
                     break;
             }
 
@@ -365,17 +366,23 @@ static void check_f_instruction(instruction ins) {
             break;
         case 0x2:
             // TODO: One instruction
-            //* Font
+            //* FX29: Set I to the memory address of the sprite data corresponding to the hexadecimal digit stored in register VX
+            LOG("TODO (FX29): Sprite stuff");
             break;
         case 0x3:
             // TODO: One instruction
-            
+            //* FX33: Store the binary-coded decimal equivalent of the value stored in register VX at addresses I, I + 1, and I + 2
+            LOG("TODO (FX33): BCD");
             break;
         case 0x5:
             // TODO: One instruction. MEMORY REQUIRED
+            //* FX55: Store the values of registers V0 to VX inclusive in memory starting at address I. I is set to I + X + 1 after operation
+            LOG("TODO (FX55): Store values V0 to VX");
             break;
         case 0x6:
             // TODO: One instruction. MEMORY REQUIRED
+            //* FX65: Fill registers V0 to VX inclusive with the values stored in memory starting at address I. I is set to I + X + 1 after operation
+            LOG("TODO (FX65): Fill register from V0 to VX");
             break;
     }
 }
