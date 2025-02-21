@@ -26,6 +26,7 @@ Screen
 SDL_Renderer *renderer;
 SDL_Window *window;
 SDL_Texture *texture;
+byte texture_bitmap[32];
 
 /*
  * Function implementations
@@ -34,7 +35,7 @@ SDL_Texture *texture;
 void ch8g_init_graphics() {
     // Init SDL2
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-    window = SDL_CreateWindow("CHIP-8", 100, 100, 64, 32, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("CHIP-8", 100, 100, 64, 32, SDL_WINDOW_SHOWN);
 
     if (window == NULL) {
         perror("Failed to build window");
@@ -43,7 +44,9 @@ void ch8g_init_graphics() {
     }
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    texture = NULL;
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX1LSB, SDL_TEXTUREACCESS_STREAMING, 64, 32);
+    SDL_RenderSetLogicalSize(renderer, 480, 240);
+    SDL_SetWindowSize(window, 480, 240);
 }
 
 bool ch8g_window_closing() {
@@ -52,85 +55,73 @@ bool ch8g_window_closing() {
     while (SDL_PollEvent(&event) != 0) {
         if (event.type == SDL_QUIT) {
             return true;
-        } else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            Sint32 h = event.window.data1 / ASPECT_RATIO;
-            SDL_RenderSetLogicalSize(renderer, event.window.data1, h); // renderer, width, height
-            SDL_SetWindowSize(window, event.window.data1, h);
-        }
+        } 
+        //else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        //    Sint32 h = event.window.data1 / ASPECT_RATIO;
+        //    SDL_RenderSetLogicalSize(renderer, event.window.data1, h); // renderer, width, height
+        //    SDL_SetWindowSize(window, event.window.data1, h);
+        //}
     }
 
     return false;
 }
 
 void ch8g_close_graphics() {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    if (texture != NULL) {
-        SDL_DestroyTexture(texture);
-    }
+    if (renderer != NULL) SDL_DestroyRenderer(renderer);
+    if (window != NULL) SDL_DestroyWindow(window);
+    if (texture != NULL) SDL_DestroyTexture(texture);
     SDL_Quit();
 }
 
 void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
     // TODO: Test
     *vf = 0;
-
+    int n_x = x;
     int n_pixel = y * WIDTH + x; // Number of pixel on screen
     int n_byte = n_pixel / 8; // Index of the byte that contains the pixel
-
     byte byte_position = 0;
     byte initial_byte_position = 0;
-    byte mask = 0b10000000;
-    byte pixels_byte; // Used to store the byte of the pixels array
-    byte *pixels;
-    int pitch;
-
-    // Initial for loop
+    byte mask_texture = 128;
+    byte mask_memory = 128;
+    // Locate bit to modify
     for (int j = n_byte; j < n_pixel; j++) {
-        mask >>= 1;
+        mask_texture >>= 1;
         byte_position++;
     }
-
     initial_byte_position = byte_position;
 
-    SDL_LockTexture(texture, NULL, (void**)&pixels, &pitch);
-
-    pixels_byte = pixels[n_byte];
-
+    int pixel_byte = texture_bitmap[n_byte];
+    int memory_byte = memory[i];
+    // Iterate at a bit level through the bidimensional array
     for (int h = 0; h < N; h++) {
         for (int w = 0; w < 8; w++) {
-            if (byte_position >= 8) {
-                n_pixel = y * WIDTH + x;
-                n_byte = n_pixel / 8;
-                byte_position = 0;
-                pixels_byte = pixels[n_byte];
-                mask = 128;
-            }
-            // Check for collision
-
-            pixels_byte ^= pixels_byte & mask;
             
-            if (pixels_byte != pixels[n_byte]) {
-                *vf = 1;
+            // Check
+            if (byte_position == 8) {
+                n_byte++;
+                pixel_byte = texture_bitmap[n_byte];
+                mask_texture = 128;
+                byte_position = 0;
             }
 
-            pixels[n_byte] = pixels_byte;
+            // Mask
+            
 
+            // Advance
+            n_x = (n_x + 1) % WIDTH;
             byte_position++;
-            mask >>= 1;
-            x = (x + 1) % WIDTH;
+            mask_texture >>= 1;
+            mask_memory >>= 1;
         }
-        // Recalculate bit and byte position
-        y = (y + 1) % HEIGHT;
-        n_pixel = y * WIDTH + x;
-        n_byte = n_pixel / 8;
-        mask = 128;
-        mask >>= initial_byte_position;
-        byte_position = initial_byte_position;
-        pixels_byte = pixels[n_byte];
-    }
 
-    SDL_UnlockTexture(texture);
+        // Next y
+        y = (y + 1) % HEIGHT;
+        byte_position = initial_byte_position;
+        mask_texture = 128;
+        mask_memory = 128,
+        mask_texture >>= initial_byte_position;
+        n_x = x;
+    }
 }
 
 void ch8g_draw() {
