@@ -4,10 +4,6 @@
 #include <SDL2/SDL.h>
 
 /*
- * Variables
- */
-
-/*
 Screen
 
 ========================================
@@ -26,7 +22,7 @@ Screen
 SDL_Renderer *renderer;
 SDL_Window *window;
 SDL_Texture *texture;
-byte texture_bitmap[32];
+byte texture_bitmap[64][32]; // SDL_PIXELFORMAT_RGB332: Used in embedded systems, but will do the job
 
 /*
  * Function implementations
@@ -35,7 +31,7 @@ byte texture_bitmap[32];
 void ch8g_init_graphics() {
     // Init SDL2
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-    window = SDL_CreateWindow("CHIP-8", 100, 100, 64, 32, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("CHIP-8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 64, 32, SDL_WINDOW_SHOWN);
 
     if (window == NULL) {
         perror("Failed to build window");
@@ -43,8 +39,10 @@ void ch8g_init_graphics() {
         exit(-1);
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX1LSB, SDL_TEXTUREACCESS_STREAMING, 64, 32);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STREAMING, 64, 32);
+    
+
     SDL_RenderSetLogicalSize(renderer, 480, 240);
     SDL_SetWindowSize(window, 480, 240);
 }
@@ -76,52 +74,41 @@ void ch8g_close_graphics() {
 void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
     // TODO: Test
     *vf = 0;
-    int n_x = x;
-    int n_pixel = y * WIDTH + x; // Number of pixel on screen
-    int n_byte = n_pixel / 8; // Index of the byte that contains the pixel
-    byte byte_position = 0;
-    byte initial_byte_position = 0;
-    byte mask_texture = 128;
-    byte mask_memory = 128;
-    // Locate bit to modify
-    for (int j = n_byte; j < n_pixel; j++) {
-        mask_texture >>= 1;
-        byte_position++;
-    }
-    initial_byte_position = byte_position;
+    byte mask = 128; // Mask for the memory byte
+    int yy = y;
+    int xx = x;
 
-    int pixel_byte = texture_bitmap[n_byte];
-    int memory_byte = memory[i];
-    // Iterate at a bit level through the bidimensional array
     for (int h = 0; h < N; h++) {
         for (int w = 0; w < 8; w++) {
-            
-            // Check
-            if (byte_position == 8) {
-                n_byte++;
-                pixel_byte = texture_bitmap[n_byte];
-                mask_texture = 128;
-                byte_position = 0;
-            }
+            byte masked = memory[i] & mask;
+            mask >>= 1;
+            byte trep = texture_bitmap[xx][yy] != 0 ? 1: 0;
+            byte mrep = masked == 0 ? 0 : 1;
+            texture_bitmap[xx][yy] = trep ^ mrep == 1 ? 255 : 0;
 
-            // Mask
-            
-
-            // Advance
-            n_x = (n_x + 1) % WIDTH;
-            byte_position++;
-            mask_texture >>= 1;
-            mask_memory >>= 1;
+            xx = (xx + 1) % 64;
         }
-
-        // Next y
-        y = (y + 1) % HEIGHT;
-        byte_position = initial_byte_position;
-        mask_texture = 128;
-        mask_memory = 128,
-        mask_texture >>= initial_byte_position;
-        n_x = x;
+        yy = (yy + 1) % 32;
+        mask = 128;
     }
+
+
+    yy = y;
+    xx = x;
+
+    byte *pixels;
+    int pitch;
+    SDL_LockTexture(texture, NULL, (void**)pixels, &pitch);
+
+    for (int h = 0; h < N; h++) {
+        for (int w = x; w < x + 8; w++) {
+            // TODO
+        }
+    }
+
+
+    SDL_UnlockTexture(texture);
+
 }
 
 void ch8g_draw() {
