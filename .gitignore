@@ -37,3 +37,4 @@ src/test.*
 *.txt
 SDL2Tests/*
 rom/*
+*.code-workspace
