@@ -310,6 +310,7 @@ void ch8_execute_instruction(instruction ins) {
 
             break;
         case 0xd:
+            //* DXYN: Draw sprite with pos X, Y and height N
             LOG("TEST Draw sprite");
             rx = mask(ins, MASK_SECOND_NIBBLE, 8);
             ry = mask(ins, MASK_THIRD_NIBBLE, 4);
