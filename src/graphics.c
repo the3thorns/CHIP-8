@@ -1,7 +1,7 @@
 #include "common.h"
 #include "graphics.h"
 #include <stdlib.h>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 
 /*
 Screen
@@ -28,6 +28,8 @@ byte texture_bitmap[64][32]; // SDL_PIXELFORMAT_RGB332: Used in embedded systems
  * Function implementations
  */
 
+static void dump_sprite(int x, int y, int N, byte* memory, address i, byte* vf);
+
 void ch8g_init_graphics() {
     // Init SDL2
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
@@ -39,9 +41,13 @@ void ch8g_init_graphics() {
         exit(-1);
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STREAMING, 64, 32);
-    
+
+    if (texture == NULL) {
+        perror("Failed to create texture");
+        exit(-1);
+    }    
 
     SDL_RenderSetLogicalSize(renderer, 480, 240);
     SDL_SetWindowSize(window, 480, 240);
@@ -65,50 +71,63 @@ bool ch8g_window_closing() {
 }
 
 void ch8g_close_graphics() {
+    if (texture != NULL) SDL_DestroyTexture(texture);
     if (renderer != NULL) SDL_DestroyRenderer(renderer);
     if (window != NULL) SDL_DestroyWindow(window);
-    if (texture != NULL) SDL_DestroyTexture(texture);
     SDL_Quit();
 }
 
 void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
     // TODO: Test
+    dump_sprite(x, y, N, memory, i, vf);
+
     *vf = 0;
     byte mask = 128; // Mask for the memory byte
-    int yy = y;
-    int xx = x;
+    int yy = y % HEIGHT;
+    int xx = x % WIDTH;
+    int ii = i;
+
+    byte *pixels;
+    int pitch; // 64
+
+    SDL_LockTexture(texture, NULL, (void**)&pixels, &pitch);
 
     for (int h = 0; h < N; h++) {
         for (int w = 0; w < 8; w++) {
-            byte masked = memory[i] & mask;
+            byte masked = memory[ii] & mask;
             mask >>= 1;
             byte trep = texture_bitmap[xx][yy] != 0 ? 1: 0;
             byte mrep = masked == 0 ? 0 : 1;
-            texture_bitmap[xx][yy] = trep ^ mrep == 1 ? 255 : 0;
 
-            xx = (xx + 1) % 64;
+            byte compare = texture_bitmap[xx][yy];
+            texture_bitmap[xx][yy] = (trep ^ mrep) * 255;
+
+            if (compare == 255 && texture_bitmap[xx][yy] == 0) {
+                *vf = 1;
+            }
+
+            pixels[yy * pitch + xx] = texture_bitmap[xx][yy];
+
+            xx = (xx + 1) % WIDTH;
         }
-        yy = (yy + 1) % 32;
+        yy = (yy + 1) % HEIGHT;
         mask = 128;
+        ii++;
     }
-
-
-    yy = y;
-    xx = x;
-
-    byte *pixels;
-    int pitch;
-    SDL_LockTexture(texture, NULL, (void**)pixels, &pitch);
-
-    for (int h = 0; h < N; h++) {
-        for (int w = x; w < x + 8; w++) {
-            // TODO
-        }
-    }
-
 
     SDL_UnlockTexture(texture);
+}
 
+static void dump_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
+    for (int n = 0; n < N; n++) {
+        byte mem = memory[i];
+        for (int w = 0; w < 8; w++) {
+            byte p = mem & (128 >> w) != 0;
+            printf("%d", (int)p);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 void ch8g_draw() {
