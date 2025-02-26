@@ -99,8 +99,8 @@ int ch8_load_memory(const char* path) {
         // fread reads binary data from file stream
         if (fread(&ins, sizeof(byte), 2, file) > 0) {
             // Adjusted for little endian
-            memory[j] = ins[1];
-            memory[j+1] = ins[0];
+            memory[j] = ins[0];
+            memory[j+1] = ins[1];
         }
     }
 
@@ -119,8 +119,13 @@ void ch8_dump_memory() {
 }
 
 instruction ch8_fech_instruction() {
-    instruction *ins = (instruction*) &memory[pc];
-    return *ins;
+    // For little endian devices
+    instruction ins;
+    byte *a = (byte*)&ins;
+    a[0] = memory[pc + 1];
+    a[1] = memory[pc];
+
+    return ins;
 }
 
 void ch8_execute_instruction(instruction ins) {

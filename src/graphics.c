@@ -93,7 +93,6 @@ void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
     SDL_LockTexture(texture, NULL, (void**)&pixels, &pitch);
 
     for (int h = 0; h < N; h++) {
-        printf("I = %d: 0x%X\n", (int)ii, memory[ii]);
         for (int w = 0; w < 8; w++) {
             byte masked = memory[ii] & mask;
             mask >>= 1;
