@@ -310,13 +310,13 @@ void ch8_execute_instruction(instruction ins) {
 
             break;
         case 0xd:
-            //* DXYN: Draw sprite with pos X, Y and height N
+            //* DXYN: Draw sprite with pos RX, RY (being RX and RY both registers) and height N
             LOG("TEST Draw sprite");
             rx = mask(ins, MASK_SECOND_NIBBLE, 8);
             ry = mask(ins, MASK_THIRD_NIBBLE, 4);
             nn = mask(ins, MASK_FOURTH_NIBBLE, 0);
 
-            ch8g_draw_sprite(rx, ry, nn, memory, i, &registers[0xf]);
+            ch8g_draw_sprite(registers[rx], registers[ry], nn, memory, i, &registers[0xf]);
             break;
         case 0xe:
             //* EX9E:Skip the following instruction if the key corresponding to the hex value currently stored in register VX is pressed
