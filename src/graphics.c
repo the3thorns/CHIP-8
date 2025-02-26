@@ -79,7 +79,7 @@ void ch8g_close_graphics() {
 
 void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
     // TODO: Test
-    dump_sprite(x, y, N, memory, i, vf);
+    //dump_sprite(x, y, N, memory, i, vf);
 
     *vf = 0;
     byte mask = 128; // Mask for the memory byte
@@ -93,16 +93,17 @@ void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
     SDL_LockTexture(texture, NULL, (void**)&pixels, &pitch);
 
     for (int h = 0; h < N; h++) {
+        printf("I = %d: 0x%X\n", (int)ii, memory[ii]);
         for (int w = 0; w < 8; w++) {
             byte masked = memory[ii] & mask;
             mask >>= 1;
             byte trep = texture_bitmap[xx][yy] != 0 ? 1: 0;
-            byte mrep = masked == 0 ? 0 : 1;
+            byte mrep = masked >> (7-w);
 
             byte compare = texture_bitmap[xx][yy];
             texture_bitmap[xx][yy] = (trep ^ mrep) * 255;
 
-            if (compare == 255 && texture_bitmap[xx][yy] == 0) {
+            if (compare != 0 && texture_bitmap[xx][yy] == 0) {
                 *vf = 1;
             }
 
@@ -110,6 +111,7 @@ void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
 
             xx = (xx + 1) % WIDTH;
         }
+        xx = x;
         yy = (yy + 1) % HEIGHT;
         mask = 128;
         ii++;
