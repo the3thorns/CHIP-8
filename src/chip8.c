@@ -66,8 +66,11 @@ static void load_standard_fonts() {
     standard_font arr[] = {F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, FA, FB, FC, FD, FE, FF};
 
     for (int j = 0; j < 16; j++) {
-        standard_font *location = (standard_font*) &memory[j * 8];
-        *location = arr[j];
+        memory[j * 5] = arr[j].r1;
+        memory[j * 5 + 1] = arr[j].r2;
+        memory[j * 5 + 2] = arr[j].r3;
+        memory[j * 5 + 3] = arr[j].r4;
+        memory[j * 5 + 4] = arr[j].r5;
     }
 }
 
@@ -333,17 +336,21 @@ void ch8_execute_instruction(instruction ins) {
         case 0xe:
             //* EX9E:Skip the following instruction if the key corresponding to the hex value currently stored in register VX is pressed
             //* EXA1: Skip the following instruction if the key corresponding to the hex value currently stored in register VX is not pressed
-            // TODO: Keypad integration. Two instructions to implement
-            LOG("TODO (EX{9E|A1}): Keypad integration");
+            // TODO: TEST
+            LOG("TEST (EX{9E|A1}): Keypad integration");
             rx = mask(ins, MASK_SECOND_NIBBLE, 8);
             switch(mask(ins, MASK_THIRD_NIBBLE, 4)) {
                 case (9): {
-                    byte hex_value = registers[rx];
-                    // Now we need to check the event an act accordingly
+                    if (key_detected == registers[rx]) {
+                        next_instruction();
+                    }
+
                     break;
                 }
                 case (10): {
-                    byte hex_value = registers[rx];
+                    if (key_detected != registers[rx]) {
+                        next_instruction();
+                    }
 
                     break;
                 }
@@ -360,6 +367,7 @@ void ch8_execute_instruction(instruction ins) {
 }
 
 static void check_f_instruction(instruction ins) {
+    byte second = mask(ins, MASK_SECOND_NIBBLE, 8);
     byte third = mask(ins, MASK_THIRD_NIBBLE, 4);
     byte fourth = mask(ins, MASK_FOURTH_NIBBLE, 0);
     byte x = mask(ins, MASK_SECOND_NIBBLE, 8);
@@ -371,8 +379,13 @@ static void check_f_instruction(instruction ins) {
                     registers[x] = delay_timer;
                     break;
                 case 0xA:
-                    // TODO: Keypad implementation
-                    LOG("TODO (FX0{7|A}): Delay timer and keypress");
+                    //* FX0A: Wait for a keypress and store the result in register VX
+                    // TODO: TEST
+                    while (key_detected == -1) {
+                        ;
+                    }
+                    registers[second] = key_detected;
+                    LOG("TEST (FX0{7|A}): Delay timer and keypress");
                     break;
             }
 
@@ -392,9 +405,10 @@ static void check_f_instruction(instruction ins) {
 
             break;
         case 0x2:
-            // TODO: One instruction
+            // TODO: Test
             //* FX29: Set I to the memory address of the sprite data corresponding to the hexadecimal digit stored in register VX
-            LOG("TODO (FX29): Sprite stuff");
+            i = registers[second] * 5;
+            LOG("TEST (FX29)");
             break;
         case 0x3:
             // TODO: One instruction
@@ -402,14 +416,22 @@ static void check_f_instruction(instruction ins) {
             LOG("TODO (FX33): BCD");
             break;
         case 0x5:
-            // TODO: One instruction. MEMORY REQUIRED
+            // TODO: TEST
             //* FX55: Store the values of registers V0 to VX inclusive in memory starting at address I. I is set to I + X + 1 after operation
-            LOG("TODO (FX55): Store values V0 to VX");
+            for (int c = 0; c <= second; c++) {
+                memory[i + c] = registers[c];
+            }
+            i = i + second + 1;
+            LOG("TEST (FX55): Store values V0 to VX");
             break;
         case 0x6:
-            // TODO: One instruction. MEMORY REQUIRED
+            // TODO: TEST
             //* FX65: Fill registers V0 to VX inclusive with the values stored in memory starting at address I. I is set to I + X + 1 after operation
-            LOG("TODO (FX65): Fill register from V0 to VX");
+            for (int c = 0; c <= second; c++) {
+                registers[c] = memory[i + c];
+            }
+            i = i + second + 1;
+            LOG("TEST (FX65): Fill register from V0 to VX");
             break;
     }
 }
