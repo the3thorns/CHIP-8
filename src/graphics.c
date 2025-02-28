@@ -1,6 +1,7 @@
 #include "common.h"
 #include "graphics.h"
 #include <stdlib.h>
+#include <stdbool.h>
 #include "SDL.h"
 
 /*
@@ -23,6 +24,7 @@ SDL_Renderer *renderer;
 SDL_Window *window;
 SDL_Texture *texture;
 byte texture_bitmap[64][32]; // SDL_PIXELFORMAT_RGB332: Used in embedded systems, but will do the job
+bool window_needs_to_close;
 
 /*
  * Function implementations
@@ -34,7 +36,7 @@ void ch8g_init_graphics() {
     // Init SDL2
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
     window = SDL_CreateWindow("CHIP-8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 64, 32, SDL_WINDOW_SHOWN);
-
+    window_needs_to_close = false;
     if (window == NULL) {
         perror("Failed to build window");
         SDL_Quit();
@@ -54,20 +56,7 @@ void ch8g_init_graphics() {
 }
 
 bool ch8g_window_closing() {
-    SDL_Event event;
-
-    while (SDL_PollEvent(&event) != 0) {
-        if (event.type == SDL_QUIT) {
-            return true;
-        } 
-        //else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-        //    Sint32 h = event.window.data1 / ASPECT_RATIO;
-        //    SDL_RenderSetLogicalSize(renderer, event.window.data1, h); // renderer, width, height
-        //    SDL_SetWindowSize(window, event.window.data1, h);
-        //}
-    }
-
-    return false;
+    return window_needs_to_close;
 }
 
 void ch8g_close_graphics() {

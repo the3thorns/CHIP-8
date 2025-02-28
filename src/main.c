@@ -1,6 +1,7 @@
 #include "common.h"
 #include "chip8.h"
 #include "graphics.h"
+#include "events.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -27,8 +28,6 @@ int main(int argc, char** argv) {
         ch8_load_memory(argv[1]);
     }
 
-    ch8_dump_memory();
-
     interpreter_loop();
     
     ch8_end();
@@ -41,6 +40,7 @@ void interpreter_loop() {
     
     // Loop
     while (!ch8g_window_closing()) {
+        ch8events_poll_events();
         instruction ins = ch8_fech_instruction();
         ch8_execute_instruction(ins);
         ch8g_draw();

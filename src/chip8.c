@@ -2,6 +2,7 @@
 #include "chip8.h"
 #include "graphics.h"
 #include <stdlib.h>
+#include "SDL.h"
 
 /**
  * This file contains all utilities of chip-8, serves as an API.
@@ -23,6 +24,12 @@ address pc;
 address i;
 byte delay_timer;
 byte sound_timer;
+
+/**
+ * Keypad variables
+ */
+
+int key_detected;
 
 /**
  * Function declarations
@@ -328,6 +335,19 @@ void ch8_execute_instruction(instruction ins) {
             //* EXA1: Skip the following instruction if the key corresponding to the hex value currently stored in register VX is not pressed
             // TODO: Keypad integration. Two instructions to implement
             LOG("TODO (EX{9E|A1}): Keypad integration");
+            rx = mask(ins, MASK_SECOND_NIBBLE, 8);
+            switch(mask(ins, MASK_THIRD_NIBBLE, 4)) {
+                case (9): {
+                    byte hex_value = registers[rx];
+                    // Now we need to check the event an act accordingly
+                    break;
+                }
+                case (10): {
+                    byte hex_value = registers[rx];
+
+                    break;
+                }
+            }
             break;
         case 0xf:
             check_f_instruction(ins);
