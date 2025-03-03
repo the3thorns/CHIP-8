@@ -21,6 +21,7 @@ byte* memory;
 
 byte registers[16];
 address pc;
+byte sp; // Stack pointer
 address i;
 byte delay_timer;
 byte sound_timer;
@@ -83,6 +84,7 @@ void ch8_init() {
     delay_timer = 0;
     sound_timer = 0;
     i = 0;
+    sp = INITIAL_STACK_ADDRESS;
     init_memory(MEMORY_SIZE);
     load_standard_fonts();
 }
@@ -135,6 +137,8 @@ instruction ch8_fech_instruction() {
     a[0] = memory[pc + 1];
     a[1] = memory[pc];
 
+    pc += 2;
+
     return ins;
 }
 
@@ -162,6 +166,8 @@ void ch8_execute_instruction(instruction ins) {
                     break;
                 case 0xE:
                     // TODO: Define subroutines 00EE: Return from a subroutine
+                    pc = sp;
+                    sp -= 1;
                     LOG("Todo (00EE): Define subroutines");
                     break;
             }
@@ -363,7 +369,6 @@ void ch8_execute_instruction(instruction ins) {
             fprintf(stderr, "Unsupported instruction\n");
         
     }
-    next_instruction();
 }
 
 static void check_f_instruction(instruction ins) {

@@ -27,6 +27,8 @@
 #define FE (standard_font){0xF0, 0x80, 0xF0, 0x80, 0xF0}
 #define FF (standard_font){0xF0, 0x80, 0xF0, 0x80, 0x80}
 
+#define INITIAL_STACK_ADDRESS 0x64 // 100 in decimal
+
 
 /**
  * Prepares resgisters and timers
