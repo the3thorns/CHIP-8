@@ -153,7 +153,6 @@ void ch8_execute_instruction(instruction ins) {
     byte vry;
     byte last;
     byte random;
-    byte *p = (byte*) &pc;
     // Filter by the first nibble
     switch (first) {
         case 0:
@@ -167,8 +166,7 @@ void ch8_execute_instruction(instruction ins) {
                     break;
                 case 0xE:
                     // TODO: Define subroutines 00EE: Return from a subroutine
-                    p[0] = memory[sp + 1];
-                    p[1] = memory[sp];
+                    pc = *(address*)(&memory[sp]);
                     sp -= 2;
                     LOG("Todo (00EE): Define subroutines");
                     break;
@@ -184,9 +182,9 @@ void ch8_execute_instruction(instruction ins) {
         case 2:
             //* TODO: Define subroutines 2NNN: Execute subroutine starting at address NNN
             sp += 2;
-            memory[sp] = p[0];
-            memory[sp + 1] = p[1];
-            LOG("Todo {2NNN}");
+            *(address *)(&memory[sp]) = pc;
+            pc = ins & 0xFFF;
+            LOG("Here {2NNN}");
             break;
         case 3:
             //* 3XNN: Skip the following instruction if the vlaue of register X equals NN
@@ -196,7 +194,7 @@ void ch8_execute_instruction(instruction ins) {
             if (rx == nn) {
                 next_instruction();
             }
-            LOG("Here 3XNN");
+            LOG("Here {3XNN}");
 
             break;
         case 4:
@@ -208,7 +206,7 @@ void ch8_execute_instruction(instruction ins) {
                 next_instruction();
             }
 
-            LOG("Here 4XNN");
+            LOG("Here {4XNN}");
 
             break;
         case 5:
@@ -220,7 +218,7 @@ void ch8_execute_instruction(instruction ins) {
                 next_instruction();
             }
 
-            LOG("Here 5XY0");
+            LOG("Here {5XY0}");
             break;
         case 6:
             //* 6XNN: Store number NN in register VX
@@ -229,7 +227,7 @@ void ch8_execute_instruction(instruction ins) {
 
             registers[rx] = nn;
             
-            LOG("Here 6XNN");
+            LOG("Here {6XNN}");
             break;
         case 7:
             //* 7XNN: Add value NN to register VX
@@ -238,7 +236,7 @@ void ch8_execute_instruction(instruction ins) {
 
             registers[rx] += nn;
 
-            LOG("Here 7XNN");
+            LOG("Here {7XNN}");
             break;
         case 8:
             last = mask(ins, MASK_FOURTH_NIBBLE, 0);
