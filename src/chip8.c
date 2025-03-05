@@ -21,7 +21,7 @@ byte* memory;
 
 byte registers[16];
 address pc;
-byte sp; // Stack pointer
+address sp; // Stack pointer
 address i;
 byte delay_timer;
 byte sound_timer;
@@ -67,11 +67,11 @@ static void load_standard_fonts() {
     standard_font arr[] = {F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, FA, FB, FC, FD, FE, FF};
 
     for (int j = 0; j < 16; j++) {
-        memory[j * 5] = arr[j].r1;
-        memory[j * 5 + 1] = arr[j].r2;
-        memory[j * 5 + 2] = arr[j].r3;
-        memory[j * 5 + 3] = arr[j].r4;
-        memory[j * 5 + 4] = arr[j].r5;
+        memory[j * 8] = arr[j].r1;
+        memory[j * 8 + 1] = arr[j].r2;
+        memory[j * 8 + 2] = arr[j].r3;
+        memory[j * 8 + 3] = arr[j].r4;
+        memory[j * 8 + 4] = arr[j].r5;
     }
 }
 
@@ -153,6 +153,7 @@ void ch8_execute_instruction(instruction ins) {
     byte vry;
     byte last;
     byte random;
+    byte *p = (byte*) &pc;
     // Filter by the first nibble
     switch (first) {
         case 0:
@@ -166,8 +167,9 @@ void ch8_execute_instruction(instruction ins) {
                     break;
                 case 0xE:
                     // TODO: Define subroutines 00EE: Return from a subroutine
-                    pc = sp;
-                    sp -= 1;
+                    p[0] = memory[sp + 1];
+                    p[1] = memory[sp];
+                    sp -= 2;
                     LOG("Todo (00EE): Define subroutines");
                     break;
             }
@@ -175,12 +177,16 @@ void ch8_execute_instruction(instruction ins) {
             break;
         case 1: // Only one option
             // * 1NNN: Jump to address NNN
-            ins &= 0x0111;
+            ins &= 0x0FFF;
             pc = ins;
-
+            LOG("Here {1NNN}");
             break;
         case 2:
             //* TODO: Define subroutines 2NNN: Execute subroutine starting at address NNN
+            sp += 2;
+            memory[sp] = p[0];
+            memory[sp + 1] = p[1];
+            LOG("Todo {2NNN}");
             break;
         case 3:
             //* 3XNN: Skip the following instruction if the vlaue of register X equals NN
@@ -190,6 +196,7 @@ void ch8_execute_instruction(instruction ins) {
             if (rx == nn) {
                 next_instruction();
             }
+            LOG("Here 3XNN");
 
             break;
         case 4:
@@ -201,6 +208,8 @@ void ch8_execute_instruction(instruction ins) {
                 next_instruction();
             }
 
+            LOG("Here 4XNN");
+
             break;
         case 5:
             //* 5XY0: Skip the following instruction if the value of register VX is equal to the value of register VY
@@ -211,6 +220,7 @@ void ch8_execute_instruction(instruction ins) {
                 next_instruction();
             }
 
+            LOG("Here 5XY0");
             break;
         case 6:
             //* 6XNN: Store number NN in register VX
@@ -218,7 +228,8 @@ void ch8_execute_instruction(instruction ins) {
             nn = mask(ins, (MASK_THIRD_NIBBLE | MASK_FOURTH_NIBBLE), 0);
 
             registers[rx] = nn;
-
+            
+            LOG("Here 6XNN");
             break;
         case 7:
             //* 7XNN: Add value NN to register VX
@@ -227,6 +238,7 @@ void ch8_execute_instruction(instruction ins) {
 
             registers[rx] += nn;
 
+            LOG("Here 7XNN");
             break;
         case 8:
             last = mask(ins, MASK_FOURTH_NIBBLE, 0);
@@ -412,7 +424,7 @@ static void check_f_instruction(instruction ins) {
         case 0x2:
             // TODO: Test
             //* FX29: Set I to the memory address of the sprite data corresponding to the hexadecimal digit stored in register VX
-            i = registers[second] * 5;
+            i = registers[second] * 8;
             LOG("TEST (FX29)");
             break;
         case 0x3:
