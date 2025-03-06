@@ -387,6 +387,8 @@ static void check_f_instruction(instruction ins) {
     byte fourth = mask(ins, MASK_FOURTH_NIBBLE, 0);
     byte x = mask(ins, MASK_SECOND_NIBBLE, 8);
 
+    byte prev;
+
     switch (third) {
         case 0x0:
             switch (fourth) {
@@ -428,6 +430,12 @@ static void check_f_instruction(instruction ins) {
         case 0x3:
             // TODO: One instruction
             //* FX33: Store the binary-coded decimal equivalent of the value stored in register VX at addresses I, I + 1, and I + 2
+
+            prev = memory[i + 2] = registers[second] % 10;
+            memory[i + 1] = (registers[second] % 100 - prev) / 10;
+            prev = registers[second] % 100;
+            memory[i] = (registers[second] % 1000 - prev) / 100;
+
             LOG("TODO (FX33): BCD");
             break;
         case 0x5:
