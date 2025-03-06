@@ -286,10 +286,10 @@ void ch8_execute_instruction(instruction ins) {
                     registers[rx] = (byte) result;
 
                     break;
-                case 6: //* right shift
-                    shifted = registers[rx] >> registers[ry];
-                    registers[0xf] = registers[rx] & MASK_LEAST_SIG_BIT;
-                    registers[rx] = shifted;
+                case 6: //* COSMACVIP version of the instruction
+                    registers[rx] = registers[ry];
+                    registers[15] = (registers[rx] & 254);
+                    registers[rx] >>= 1;
 
                     break;
                 case 7:
@@ -305,10 +305,10 @@ void ch8_execute_instruction(instruction ins) {
                     registers[rx] = (byte) result;
 
                     break;
-                case 0xE: //* left shift
-                    shifted = registers[rx] << registers[ry];
-                    registers[0xf] = registers[rx] & 0b10000000;
-                    registers[rx] = shifted;
+                case 0xE: //* COSMACVIP version of the instruction
+                    registers[rx] = registers[ry];
+                    registers[15] = (registers[rx] & 127) >> 7;
+                    registers[rx] <<= 1;
 
                     break;
             }
