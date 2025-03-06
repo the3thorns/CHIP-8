@@ -248,17 +248,17 @@ void ch8_execute_instruction(instruction ins) {
                     registers[rx] = registers[ry];
 
                     break;
-                case 1: //* OR
+                case 1: //* OR - Resets register vx (COSMAC QUIRK)
                     registers[rx] = registers[rx] | registers[ry];
-
+                    registers[15] = 0;
                     break;
-                case 2: //* AND
+                case 2: //* AND - Resets register vx (COSMAC QUIRK)
                     registers[rx] = registers[rx] & registers[ry];
-
+                    registers[15] = 0;
                     break;
-                case 3: //* XOR
+                case 3: //* XOR - Resets register vx (COSMAC QUIRK)
                     registers[rx] = registers[rx] ^ registers[ry];
-
+                    registers[15] = 0;
                     break;
                 case 4: //* add
                     result = registers[rx] + registers[ry];
@@ -422,13 +422,11 @@ static void check_f_instruction(instruction ins) {
 
             break;
         case 0x2:
-            // TODO: Test
             //* FX29: Set I to the memory address of the sprite data corresponding to the hexadecimal digit stored in register VX
             i = registers[second] * 8;
             LOG("TEST (FX29)");
             break;
         case 0x3:
-            // TODO: One instruction
             //* FX33: Store the binary-coded decimal equivalent of the value stored in register VX at addresses I, I + 1, and I + 2
 
             prev = memory[i + 2] = registers[second] % 10;
@@ -439,7 +437,6 @@ static void check_f_instruction(instruction ins) {
             LOG("TODO (FX33): BCD");
             break;
         case 0x5:
-            // TODO: TEST
             //* FX55: Store the values of registers V0 to VX inclusive in memory starting at address I. I is set to I + X + 1 after operation
             for (int c = 0; c <= second; c++) {
                 memory[i + c] = registers[c];
@@ -448,7 +445,6 @@ static void check_f_instruction(instruction ins) {
             LOG("TEST (FX55): Store values V0 to VX");
             break;
         case 0x6:
-            // TODO: TEST
             //* FX65: Fill registers V0 to VX inclusive with the values stored in memory starting at address I. I is set to I + X + 1 after operation
             for (int c = 0; c <= second; c++) {
                 registers[c] = memory[i + c];
