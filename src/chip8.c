@@ -270,7 +270,7 @@ void ch8_execute_instruction(instruction ins) {
 
                     break;
                 case 5: //* sub
-                    sresult = (int16_t) (registers[rx] - registers[ry]);
+                    sresult = (int16_t) (registers[rx] - (int16_t) registers[ry]);
 
                     registers[rx] = (byte) (sresult & 0xFF);
 
@@ -283,9 +283,9 @@ void ch8_execute_instruction(instruction ins) {
 
                     break;
                 case 6: //* COSMACVIP version of the instruction
-                    registers[rx] = registers[ry];
-                    registers[rx] >>= 1;
-                    registers[15] = (registers[ry] & 254);
+                    nn = registers[ry];
+                    registers[rx] = registers[ry] >> 1;
+                    registers[15] = (nn & 1);
 
                     break;
                 case 7:
@@ -302,9 +302,9 @@ void ch8_execute_instruction(instruction ins) {
 
                     break;
                 case 0xE: //* COSMACVIP version of the instruction
-                    registers[rx] = registers[ry];
-                    registers[15] = (registers[rx] & 127) >> 7;
-                    registers[rx] <<= 1;
+                    nn = registers[ry];
+                    registers[rx] = registers[ry] << 1;
+                    registers[15] = nn >> 7;
 
                     break;
             }
