@@ -148,6 +148,7 @@ void ch8_execute_instruction(instruction ins) {
     byte nn;
     byte ry;
     uint16_t result;
+    int16_t sresult;
     byte shifted;
     byte vrx;
     byte vry;
@@ -261,39 +262,36 @@ void ch8_execute_instruction(instruction ins) {
                     registers[15] = 0;
                     break;
                 case 4: //* add
-                    result = registers[rx] + registers[ry];
+                    result = (uint16_t)registers[rx] + (uint16_t)registers[ry];
 
-                    if (result > 255) {
-                        // Overflow
-                        registers[0xf] = 1;
-                    } else {
-                        registers[0xf] = 0;
-                    }
+                    registers[rx] = (byte) (result & 0xFF);
 
-                    registers[rx] = (byte) result;
+                    registers[0xf] = result > 255 ? 1 : 0;
 
                     break;
                 case 5: //* sub
-                    result = registers[rx] - registers[ry];
+                    sresult = (int16_t) (registers[rx] - registers[ry]);
 
-                    if (result > registers[ry]) {
+                    registers[rx] = (byte) (sresult & 0xFF);
+
+                    if (registers[rx] > registers[ry]) {
                         registers[0xf] = 1;
                     } else {
                         // Borrow happened (underflow);
                         registers[0xf] = 0;
                     }
 
-                    registers[rx] = (byte) result;
-
                     break;
                 case 6: //* COSMACVIP version of the instruction
                     registers[rx] = registers[ry];
-                    registers[15] = (registers[rx] & 254);
                     registers[rx] >>= 1;
+                    registers[15] = (registers[ry] & 254);
 
                     break;
                 case 7:
                     result = registers[ry] - registers[rx];
+
+                    registers[rx] = (byte) result;
 
                     if (result < registers[ry]) {
                         registers[0xf] = 1;
@@ -301,8 +299,6 @@ void ch8_execute_instruction(instruction ins) {
                         // Borrow happened (underflow);
                         registers[0xf] = 0;
                     }
-
-                    registers[rx] = (byte) result;
 
                     break;
                 case 0xE: //* COSMACVIP version of the instruction
