@@ -1,6 +1,7 @@
 #include "common.h"
 #include "chip8.h"
 #include "graphics.h"
+#include "events.h"
 #include <stdlib.h>
 #include "SDL.h"
 
@@ -394,9 +395,9 @@ static void check_f_instruction(instruction ins) {
                     break;
                 case 0xA:
                     //* FX0A: Wait for a keypress and store the result in register VX
-                    // TODO: TEST
+                    // TODO: Poll events
                     while (key_detected == -1) {
-                        ;
+                        ch8events_poll_events();
                     }
                     registers[second] = key_detected;
                     LOG("TEST (FX0{7|A}): Delay timer and keypress");

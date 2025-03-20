@@ -67,9 +67,6 @@ void ch8g_close_graphics() {
 }
 
 void ch8g_draw_sprite(int x, int y, int N, byte* memory, address i, byte* vf) {
-    // TODO: Test
-    //dump_sprite(x, y, N, memory, i, vf);
-
     *vf = 0;
     byte mask = 128; // Mask for the memory byte
     int yy = y % HEIGHT;
@@ -127,5 +124,10 @@ void ch8g_draw() {
 }
 
 void ch8g_clear_screen() {
+    for (int w = 0; w < 64; w++) {
+        for (int h = 0; h < 32; h++) {
+            texture_bitmap[w][h] = 0;
+        }
+    }
     SDL_RenderClear(renderer);
 }
