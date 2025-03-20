@@ -124,10 +124,19 @@ void ch8g_draw() {
 }
 
 void ch8g_clear_screen() {
+    byte *pixels;
+    int pitch; // 64
+
+    SDL_LockTexture(texture, NULL, (void*)&pixels, &pitch);
+
     for (int w = 0; w < 64; w++) {
         for (int h = 0; h < 32; h++) {
             texture_bitmap[w][h] = 0;
+            pixels[h * pitch + w] = 0;
         }
     }
+
+    SDL_UnlockTexture(texture);
+
     SDL_RenderClear(renderer);
 }
