@@ -270,15 +270,16 @@ void ch8_execute_instruction(instruction ins) {
 
                     break;
                 case 5: //* sub
-                    sresult = (int16_t) (registers[rx] - (int16_t) registers[ry]);
+                    result = (int16_t)registers[rx] - (int16_t)registers[ry];
+                    
+                    nn = registers[rx];
+                    registers[rx] = (byte) result;
 
-                    registers[rx] = (byte) (sresult & 0xFF);
-
-                    if (registers[rx] > registers[ry]) {
-                        registers[0xf] = 1;
+                    if (nn >= registers[ry]) {
+                        registers[15] = 1;
                     } else {
-                        // Borrow happened (underflow);
-                        registers[0xf] = 0;
+                        // Underflow
+                        registers[15] = 0;
                     }
 
                     break;
