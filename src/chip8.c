@@ -131,7 +131,7 @@ void ch8_dump_memory() {
     }
 }
 
-instruction ch8_fech_instruction() {
+instruction ch8_fetch_instruction() {
     // For little endian devices
     instruction ins;
     byte *a = (byte*)&ins;
@@ -167,7 +167,6 @@ void ch8_execute_instruction(instruction ins) {
                     ch8g_clear_screen();
                     break;
                 case 0xE:
-                    // TODO: Define subroutines 00EE: Return from a subroutine
                     pc = *(address*)(&memory[sp]);
                     sp -= 2;
                     LOG("Todo (00EE): Define subroutines");

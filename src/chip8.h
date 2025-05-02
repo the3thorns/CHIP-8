@@ -53,7 +53,7 @@ void ch8_dump_memory();
  * Gets the instruction from memory
  */
 
-instruction ch8_fech_instruction();
+instruction ch8_fetch_instruction();
 
 /**
  * Inserts a raw instruction into the CHIP-8 interpreter and executes it

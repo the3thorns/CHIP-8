@@ -9,7 +9,7 @@
  */
 
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
     #define LOG(x) printf("%s\n", x);
@@ -24,6 +24,12 @@
 #ifndef TARGET_FPS
     #define TARGET_FPS 30
 #endif
+
+/**
+ * Timing
+ */
+
+#define TICK_FREQUENCY 500
 
 /**
  * Typedefs
